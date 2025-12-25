@@ -60,9 +60,6 @@ if [ -z "$STAGED_FILES" ]; then
     exit 0
 fi
 
-# Temporary file to track issues.
-TEMP_REPORT=$(mktemp)
-
 # Check each staged file.
 for FILE in $STAGED_FILES; do
 
@@ -87,8 +84,6 @@ for FILE in $STAGED_FILES; do
         continue
     fi
 
-    FILE_MODIFIED=0
-
     # Check each pattern.
     for i in "${!SECRET_PATTERNS[@]}"; do
         PATTERN="${SECRET_PATTERNS[$i]}"
@@ -104,21 +99,14 @@ for FILE in $STAGED_FILES; do
                 echo "    ${line}"
             done
 
-            echo "" >> "$TEMP_REPORT"
-            echo "File: $FILE" >> "$TEMP_REPORT"
-            echo "Pattern: $PATTERN_NAME" >> "$TEMP_REPORT"
-            grep -inE -- "$PATTERN" "$FILE" >> "$TEMP_REPORT"
-
             FOUND_SECRETS=$((FOUND_SECRETS + 1))
 
-            FILE_MODIFIED=1
         fi
     done
 
-    if [ $FILE_MODIFIED -eq 1 ]; then
-        FILES_WITH_SECRETS+=("$FILE")
-        echo "Secrets found in: ${FILE}"
-    fi
+    FILES_WITH_SECRETS+=("$FILE")
+    echo "Secrets found in: ${FILE}"
+
 done
 
 # Summary.
@@ -134,13 +122,12 @@ if [ $FOUND_SECRETS -gt 0 ]; then
     echo ""
     echo "Please remove the secrets from the files above and try again."
     echo "Consider using environment variables or configuration files for sensitive data."
+    echo ""
+    echo "If this was a mistake, you can edit the pre-commit hook for secrets in .git/hooks/pre-commit.d/##-secrets-check.sh."
 else
     echo "No secrets detected. Safe to commit!"
 fi
 echo "========================================"
-
-# Cleanup.
-rm -f "$TEMP_REPORT"
 
 # Exit with error code if secrets were found to block the commit.
 if [ $FOUND_SECRETS -gt 0 ]; then
