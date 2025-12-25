@@ -1,0 +1,26 @@
+#!/bin/bash
+# .git/hooks/pre-commit
+
+# This pre-commit hook runs all the hooks in the pre-commit.d directory.
+
+HOOK_DIR="$(git rev-parse --show-toplevel)/hooks/pre-commit.d"
+
+# Exit on first error (if any hook fails, stop the commit)
+set -e
+
+# Run all executable files in the pre-commit.d directory
+if [ -d "$HOOK_DIR" ]; then
+    for hook in "$HOOK_DIR"/*; do
+        if [ -x "$hook" ]; then
+            echo "Running hook: $(basename "$hook")"
+            "$hook"
+            # Check exit status
+            if [ $? -ne 0 ]; then
+                echo "Hook $(basename "$hook") failed!"
+                exit 1
+            fi
+        fi
+    done
+fi
+
+exit 0
