@@ -17,10 +17,18 @@ SECRET_PATTERNS=(
     'AKIA[0-9A-Z]{16}'
     # AWS Secret Access Key
     'aws_secret_access_key\s*=\s*["\047]?[A-Za-z0-9/+=]{40}["\047]?'
+    # Generic API Key
+    'api[_-]?key\s*[=:]\s*["\047]?[A-Za-z0-9_\-]{20,}["\047]?'
+    # Generic Secret
+    'secret\s*[=:]\s*["\047]?[A-Za-z0-9_\-]{20,}["\047]?'
+    # Generic Password
+    'password\s*[=:]\s*["\047]?[^\s"\047]{8,}["\047]?'
     # Private Key Header
     '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'
     # GitHub Token
     'gh[pousr]_[A-Za-z0-9_]{36,}'
+    # Generic Token
+    'token\s*[=:]\s*["\047]?[A-Za-z0-9_\-]{20,}["\047]?'
     # Google API Key
     'AIza[0-9A-Za-z_\-]{35}'
     # Slack Token
@@ -35,6 +43,8 @@ SECRET_PATTERNS=(
     '-----BEGIN EC PRIVATE KEY-----'
     # PGP Private Key
     '-----BEGIN PGP PRIVATE KEY BLOCK-----'
+    # Database Connection String
+    '(mongodb|mysql|postgres|postgresql):\/\/[^\s]*:[^\s]*@[^\s]+'
 )
 
 FOUND_SECRETS=0
@@ -85,19 +95,19 @@ for FILE in $STAGED_FILES; do
         PATTERN_NAME="Secret Pattern $((i+1))"
 
         # Search for pattern in file (case-insensitive).
-        if grep -iEq "$PATTERN" "$FILE"; then
+        if grep -iEq -- "$PATTERN" "$FILE"; then
             echo "[!] Found potential secret in: ${FILE}"
             echo "    Pattern matched: ${PATTERN_NAME}"
 
             # Show the matching lines (with line numbers).
-            grep -inE "$PATTERN" "$FILE" | while read -r line; do
+            grep -inE -- "$PATTERN" "$FILE" | while read -r line; do
                 echo "    ${line}"
             done
 
             echo "" >> "$TEMP_REPORT"
             echo "File: $FILE" >> "$TEMP_REPORT"
             echo "Pattern: $PATTERN_NAME" >> "$TEMP_REPORT"
-            grep -inE "$PATTERN" "$FILE" >> "$TEMP_REPORT"
+            grep -inE -- "$PATTERN" "$FILE" >> "$TEMP_REPORT"
 
             FOUND_SECRETS=$((FOUND_SECRETS + 1))
 
