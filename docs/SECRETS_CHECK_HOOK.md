@@ -12,9 +12,6 @@ sensitive information in your Git repository.
 The secrets check hook protects against common security vulnerabilities:
 
 - **Pattern-based Detection**: Scans for 15+ common secret patterns
-- **Multiple Secret Types**: Detects API keys, passwords, tokens, private keys,
-  and more
-- **Case-Insensitive Matching**: Finds secrets regardless of capitalization
 - **Commit Blocking**: Prevents commits if secrets are detected
 - **Detailed Reporting**: Shows exact lines where secrets were found
 - **File Exemptions**: Allows specific files to be excluded from scanning
