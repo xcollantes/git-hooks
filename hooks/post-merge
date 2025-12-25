@@ -1,0 +1,24 @@
+#!/bin/bash
+# Post-merge hook to automatically decrypt encrypted files after pull/merge.
+# This hook runs after git pull or git merge operations.
+
+set -e
+
+# Run all scripts in post-merge.d directory if it exists.
+HOOK_DIR="$(git rev-parse --show-toplevel)/.git/hooks/post-merge.d"
+
+if [ -d "$HOOK_DIR" ]; then
+    for hook in "$HOOK_DIR"/*; do
+        if [ -x "$hook" ]; then
+            echo "Running hook: $(basename "$hook")"
+            "$hook"
+            # Check exit status
+            if [ $? -ne 0 ]; then
+                echo "Hook $(basename "$hook") failed!"
+                exit 1
+            fi
+        fi
+    done
+fi
+
+exit 0
