@@ -27,14 +27,6 @@ Coming Soon.
 
 Approaches to managing hooks.
 
-I'll help you understand how to handle multiple git hook files for pre-commit.
-Let me first check what you currently have set up.
-
-[3 tools called]
-
-Great question! Git natively only allows **one file per hook type** (like
-`pre-commit`), but there are several ways to run multiple hook scripts:
-
 ### Approach 1: Single Dispatcher Hook (Recommended & Simple)
 
 Create a single `pre-commit` hook that executes multiple scripts from a
