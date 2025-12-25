@@ -3,7 +3,7 @@
 
 # This pre-commit hook runs all the hooks in the pre-commit.d directory.
 
-HOOK_DIR="$(git rev-parse --show-toplevel)/hooks/pre-commit.d"
+HOOK_DIR="$(git rev-parse --show-toplevel)/.git/hooks/pre-commit.d"
 
 # Exit on first error (if any hook fails, stop the commit)
 set -e
