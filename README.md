@@ -7,8 +7,15 @@ Collection of Git hooks and how to use them.
 The hooks are stored in the `hooks` directory. But locally they would normally
 be stored in the `.git/hooks` directory.
 
-Take the desired hook, copy, then paste it into the `.git/hooks` directory for
-the desired repository.
+1. Choose the desired hook, copy.
+2. Paste hook file and directories if it applies into the `.git/hooks` directory
+   for the desired repository.
+3. Make the hook files executable.
+
+```bash
+chmod +x .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit.d/*
+```
 
 ## Secret Scanning
 
