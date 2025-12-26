@@ -65,28 +65,6 @@ encryption passphrase. This passphrase will be stored in `hooks/encryption-key`
 **RECOMMENDED:** Use a strong passphrase with at least 20 characters with
 symbols and numbers.
 
-### 3. Configure Files to Encrypt (Optional)
-
-By default, the following patterns are encrypted:
-
-- `*.secret`
-- `*.private`
-- `*.key`
-- `secrets/*`
-- `private/*`
-
-To customize, create `.git/encrypt-config`:
-
-```bash
-# Custom encryption patterns.
-CUSTOM_ENCRYPT_PATTERNS=(
-    '*.secret'
-    '*.private'
-    'config/production.yml'
-    'keys/*'
-)
-```
-
 ## Usage
 
 ### Encrypting Files
@@ -105,14 +83,13 @@ git commit -m "Add configuration"
 ```
 
 3. The pre-commit hook will:
-   - Detect files matching encryption patterns
-   - Encrypt them with GPG using AES-256
+   - Encrypt the files with GPG using AES-256
    - Stage the encrypted `.gpg` files
    - Unstage the original files (they remain in your working directory)
 
 ### Decrypting Files
 
-When you pull changes containing encrypted files:
+When you pull changes:
 
 ```bash
 git pull
@@ -135,32 +112,7 @@ The post-merge hook will:
 5. **Keep GPG updated** to the latest version
 6. **Backup your encryption key** securely
 
-## Team Collaboration
-
-### For New Team Members:
-
-1. Install GPG (see Setup Instructions)
-2. Get the encryption passphrase from your team lead (through secure channel)
-3. Create `.git/encryption-key` file:
-
-```bash
-echo "your-passphrase-here" > .git/encryption-key
-chmod 600 .git/encryption-key
-```
-
-4. Pull the repository:
-
-```bash
-git pull
-```
-
-Files will automatically decrypt.
-
-### For Existing Team Members:
-
-No changes needed. The hooks work automatically once configured.
-
-## Troubleshooting
+## Pitfalls
 
 ### "GPG is not installed"
 
@@ -180,55 +132,3 @@ create it manually with the correct passphrase.
 
 Check that your files match the patterns in `DEFAULT_ENCRYPT_PATTERNS` or your
 custom `.git/encrypt-config`.
-
-## Technical Details
-
-### Encryption Process
-
-1. File is read from staging area
-2. GPG encrypts using symmetric AES-256 with maximum S2K iterations
-3. Encrypted file (`.gpg` extension) is staged
-4. Original file is unstaged (remains in working directory)
-
-### Decryption Process
-
-1. After merge/pull, hook scans for `.gpg` files
-2. GPG decrypts using the stored passphrase
-3. Decrypted files are written to working directory
-4. Permissions are set to 600 (owner read/write only)
-
-### Key Derivation
-
-The S2K (String-to-Key) process uses 65,011,712 iterations of SHA-512, making
-passphrase brute-forcing computationally expensive.
-
-## Limitations
-
-- **Performance**: Due to maximum security settings, encryption/decryption is
-  slower than default GPG settings
-- **Binary Files**: Works with all file types including binary
-- **Large Files**: Very large files will take longer to encrypt/decrypt
-- **Git LFS**: Not optimized for use with Git LFS
-
-## Alternative: Manual Encryption
-
-If you prefer manual control, you can encrypt/decrypt manually:
-
-**Encrypt:**
-
-```bash
-echo "passphrase" | gpg --batch --yes --passphrase-fd 0 --symmetric \
-  --cipher-algo AES256 --digest-algo SHA512 --s2k-count 65011712 \
-  --output file.gpg file.txt
-```
-
-**Decrypt:**
-
-```bash
-echo "passphrase" | gpg --batch --yes --passphrase-fd 0 --decrypt \
-  --output file.txt file.gpg
-```
-
-## License
-
-These hooks are provided as-is for use in your projects.
