@@ -9,7 +9,6 @@ set -e
 CONFIG_FILE="$(git rev-parse --show-toplevel)/.git/encrypt-config"
 
 # Files to encrypt (patterns).
-# This can be customized in the config file.
 DEFAULT_ENCRYPT_PATTERNS=(
     '*.secret'
     '*.private'
@@ -18,25 +17,15 @@ DEFAULT_ENCRYPT_PATTERNS=(
     'private/*'
 )
 
-# GPG encryption settings - Most secure configuration.
-# Using AES-256 with additional cipher preferences for maximum security.
 GPG_CIPHER_ALGO="AES256"
 GPG_DIGEST_ALGO="SHA512"
 GPG_COMPRESS_ALGO="ZLIB"
 GPG_COMPRESS_LEVEL="9"
 GPG_S2K_MODE="3"
 GPG_S2K_DIGEST_ALGO="SHA512"
-GPG_S2K_COUNT="65011712"  # Maximum iteration count for key derivation.
+GPG_S2K_COUNT="65011712"
 
-# Colors for output.
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color.
-
-echo "========================================"
 echo "Starting file encryption check..."
-echo "========================================"
 
 # Load configuration if exists.
 if [ -f "$CONFIG_FILE" ]; then
@@ -48,7 +37,7 @@ fi
 
 # Check if GPG is installed.
 if ! command -v gpg &> /dev/null; then
-    echo -e "${RED}[ERROR] GPG is not installed. Please install GPG to use encryption.${NC}"
+    echo "[ERROR] GPG is not installed. Please install GPG to use encryption."
     echo "Install with: brew install gnupg (macOS) or apt-get install gnupg (Linux)"
     exit 1
 fi
@@ -56,7 +45,7 @@ fi
 # Check for encryption key/passphrase.
 ENCRYPTION_KEY_FILE="$(git rev-parse --show-toplevel)/.git/encryption-key"
 if [ ! -f "$ENCRYPTION_KEY_FILE" ]; then
-    echo -e "${YELLOW}[WARNING] No encryption key file found at $ENCRYPTION_KEY_FILE${NC}"
+    echo "[WARNING] No encryption key file found at $ENCRYPTION_KEY_FILE"
     echo "Creating a new encryption key file..."
     echo "Please enter a strong passphrase for encryption:"
     read -s PASSPHRASE
@@ -66,17 +55,17 @@ if [ ! -f "$ENCRYPTION_KEY_FILE" ]; then
     echo ""
 
     if [ "$PASSPHRASE" != "$PASSPHRASE_CONFIRM" ]; then
-        echo -e "${RED}[ERROR] Passphrases do not match.${NC}"
+        echo "[ERROR] Passphrases do not match."
         exit 1
     fi
 
     if [ ${#PASSPHRASE} -lt 20 ]; then
-        echo -e "${YELLOW}[WARNING] Passphrase is less than 20 characters. Consider using a longer passphrase.${NC}"
+        echo "[WARNING] Passphrase is less than 20 characters. Consider using a longer passphrase."
     fi
 
     echo "$PASSPHRASE" > "$ENCRYPTION_KEY_FILE"
     chmod 600 "$ENCRYPTION_KEY_FILE"
-    echo -e "${GREEN}[SUCCESS] Encryption key file created.${NC}"
+    echo "[SUCCESS] Encryption key file created."
 fi
 
 # Read the passphrase.
@@ -110,7 +99,7 @@ encrypt_file() {
     local file="$1"
     local encrypted_file="${file}.gpg"
 
-    echo -e "${YELLOW}[ENCRYPTING] $file${NC}"
+    echo "[ENCRYPTING] $file"
 
     # Use GPG with the most secure settings.
     # Symmetric encryption with AES-256, SHA-512, and maximum S2K iterations.
@@ -138,10 +127,10 @@ encrypt_file() {
         # Remove original file from staging (but keep in working directory).
         git reset -- "$file" >/dev/null 2>&1 || true
 
-        echo -e "${GREEN}[SUCCESS] Encrypted: $file -> $encrypted_file${NC}"
+        echo "[SUCCESS] Encrypted: $file -> $encrypted_file"
         return 0
     else
-        echo -e "${RED}[ERROR] Failed to encrypt: $file${NC}"
+        echo "[ERROR] Failed to encrypt: $file"
         return 1
     fi
 }
@@ -163,7 +152,7 @@ for FILE in $STAGED_FILES; do
         if encrypt_file "$FILE"; then
             ENCRYPTED_COUNT=$((ENCRYPTED_COUNT + 1))
         else
-            echo -e "${RED}[ERROR] Encryption failed. Aborting commit.${NC}"
+            echo "[ERROR] Encryption failed. Aborting commit."
             exit 1
         fi
     else
@@ -179,7 +168,7 @@ echo "  Files encrypted: $ENCRYPTED_COUNT"
 echo "  Files skipped: $SKIPPED_COUNT"
 echo ""
 if [ $ENCRYPTED_COUNT -gt 0 ]; then
-    echo -e "${GREEN}Files successfully encrypted and staged.${NC}"
+    echo "Files successfully encrypted and staged."
     echo "Original files remain in your working directory but are not staged."
     echo ""
     echo "To decrypt files after pulling, the post-merge hook will handle it automatically."
