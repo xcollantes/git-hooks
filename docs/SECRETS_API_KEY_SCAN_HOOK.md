@@ -7,6 +7,10 @@ files for potential secrets, API keys, passwords, tokens, and other sensitive
 credentials before allowing commits. This prevents accidental exposure of
 sensitive information in your Git repository.
 
+**NOTE**: The hooks will all run as long a they are in the `.git/hooks` directory.
+To exclude a hook, remove it to the `hooks` directory. To skip all hooks, use
+`git commit --no-verify -m "COMMIT MESSAGE"` flag.
+
 ## Security Features
 
 The secrets check hook protects against common security vulnerabilities:

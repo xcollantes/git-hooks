@@ -7,6 +7,10 @@ containing "local/" in their name to remote repositories. This ensures that
 branches meant for local development and experimentation stay on your machine
 and don't clutter the remote repository.
 
+**NOTE**: The hooks will all run as long a they are in the `.git/hooks` directory.
+To exclude a hook, remove it to the `hooks` directory. To skip all hooks, use
+`git push --no-verify origin branch-name` flag.
+
 ## Features
 
 The local branch block hook provides:
