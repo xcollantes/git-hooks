@@ -12,6 +12,10 @@ be stored in the `.git/hooks` directory.
    for the desired repository.
 3. Make the hook files executable.
 
+**NOTE**: The hooks will all run as long a they are in the `.git/hooks` directory.
+To exclude a hook, remove it to the `hooks` directory. To skip all hooks, use
+the `--no-verify` flag.
+
 ```bash
 chmod +x .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit.d/*
