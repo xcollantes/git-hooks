@@ -8,8 +8,8 @@ set -e
 # Configuration file path.
 CONFIG_FILE="$(git rev-parse --show-toplevel)/.git/encrypt-config"
 
-# Files to encrypt (patterns).
-DEFAULT_ENCRYPT_PATTERNS=(
+# Files to encrypt (regex patterns).
+ENCRYPT_PATTERNS=(
     '*.secret'
     '*.private'
     '*.key'
@@ -44,6 +44,7 @@ fi
 
 # Check for encryption key/passphrase.
 ENCRYPTION_KEY_FILE="$(git rev-parse --show-toplevel)/.git/encryption-key"
+
 if [ ! -f "$ENCRYPTION_KEY_FILE" ]; then
     echo "[WARNING] No encryption key file found at $ENCRYPTION_KEY_FILE"
     echo "Creating a new encryption key file..."
@@ -94,7 +95,7 @@ matches_pattern() {
     return 1
 }
 
-# Function to encrypt a file with maximum security.
+# Function to encrypt a file.
 encrypt_file() {
     local file="$1"
     local encrypted_file="${file}.gpg"
@@ -176,4 +177,3 @@ fi
 echo "========================================"
 
 exit 0
-
