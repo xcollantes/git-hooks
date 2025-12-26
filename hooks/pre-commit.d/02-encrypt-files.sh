@@ -155,7 +155,10 @@ encrypt_file() {
         # Remove original file from staging (but keep in working directory).
         git reset -- "$file" >/dev/null 2>&1 || true
 
-        echo "[SUCCESS] Encrypted: $file -> $encrypted_file"
+        # Remove encrypted file from working directory (it's already staged).
+        rm -f "$encrypted_file"
+
+        echo "[SUCCESS] Encrypted: $file -> $encrypted_file (encrypted version will be committed, not kept locally)"
         return 0
     else
         echo "[ERROR] Failed to encrypt: $file"
@@ -196,8 +199,9 @@ echo "  Files encrypted: $ENCRYPTED_COUNT"
 echo "  Files skipped: $SKIPPED_COUNT"
 echo ""
 if [ $ENCRYPTED_COUNT -gt 0 ]; then
-    echo "Files successfully encrypted and staged."
-    echo "Original files remain in your working directory but are not staged."
+    echo "Encrypted files are staged and will be committed."
+    echo "Original files remain in your working directory (not committed)."
+    echo "Encrypted versions are not kept in the working directory."
     echo ""
     echo "To decrypt files after pulling, the post-merge hook will handle it automatically."
 fi
