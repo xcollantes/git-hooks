@@ -12,7 +12,9 @@ set -e
 if [ -d "$HOOK_DIR" ]; then
     for hook in "$HOOK_DIR"/*; do
         if [ -x "$hook" ]; then
+            echo "========================================"
             echo "Running hook: $(basename "$hook")"
+            echo "========================================"
             "$hook"
             # Check exit status
             if [ $? -ne 0 ]; then
