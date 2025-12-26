@@ -1,16 +1,13 @@
 #!/bin/bash
 # Post-merge hook to decrypt files after pull/merge operations.
 # Uses GPG to decrypt files that were encrypted during pre-commit.
-# Prioritizes security over speed.
 
 set -e
 
 # Configuration.
 ENCRYPTION_KEY_FILE=".git/encryption-key"
 
-echo "========================================"
 echo "Starting file decryption check..."
-echo "========================================"
 
 # Check if GPG is installed.
 if ! command -v gpg &> /dev/null; then
@@ -23,7 +20,7 @@ fi
 if [ ! -f "$ENCRYPTION_KEY_FILE" ]; then
     echo "[WARNING] No encryption key file found at $ENCRYPTION_KEY_FILE"
     echo "If you have encrypted files, please provide the passphrase:"
-    read -s PASSPHRASE
+    read -s PASSPHRASE < /dev/tty
     echo ""
 
     if [ -z "$PASSPHRASE" ]; then
@@ -36,7 +33,7 @@ else
 fi
 
 # Find all .gpg files in the repository.
-GPG_FILES=$(find . -type f -name "*.gpg" -not -path "./.git/*" 2>/dev/null || true)
+GPG_FILES=$(find . -type f -name "*.encrypted" -not -path "./.git/*" 2>/dev/null || true)
 
 if [ -z "$GPG_FILES" ]; then
     echo "No encrypted files found."
@@ -49,7 +46,7 @@ FAILED_COUNT=0
 # Function to decrypt a file.
 decrypt_file() {
     local encrypted_file="$1"
-    local decrypted_file="${encrypted_file%.gpg}"
+    local decrypted_file="${encrypted_file%.encrypted}"
 
     echo "[DECRYPTING] $encrypted_file"
 

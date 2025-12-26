@@ -13,12 +13,12 @@ if [ -d "$HOOK_DIR" ]; then
     for hook in "$HOOK_DIR"/*; do
         if [ -x "$hook" ]; then
             echo "========================================"
-            echo "Running hook: $(basename "$hook")"
+            echo "PRE-COMMIT: Running hook: $(basename "$hook")"
             echo "========================================"
             "$hook"
             # Check exit status
             if [ $? -ne 0 ]; then
-                echo "Hook $(basename "$hook") failed!"
+                echo "PRE-COMMIT: Hook $(basename "$hook") failed!"
                 exit 1
             fi
         fi

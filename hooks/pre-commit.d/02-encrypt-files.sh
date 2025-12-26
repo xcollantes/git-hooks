@@ -9,12 +9,43 @@ set -e
 CONFIG_FILE="$(git rev-parse --show-toplevel)/.git/encrypt-config"
 
 # Files to encrypt (regex patterns).
-ENCRYPT_PATTERNS=(
-    '*.secret'
-    '*.private'
-    '*.key'
-    'secrets/*'
-    'private/*'
+ENCRYPT_FILENAME_PATTERNS=(
+    '*.txt'
+    '*.md'
+    '*.sh'
+    '*.py'
+    '*.json'
+    '*.yaml'
+    '*.yml'
+    '*.xml'
+    '*.html'
+    '*.css'
+    '*.js'
+    '*.pdf'
+    '*.csv'
+    '*.tsv'
+    '*.sql'
+    '*.db'
+    '*.sqlite'
+    '*.sqlite3'
+    '*.sqlite3'
+    '*.docx'
+    '*.doc'
+    '*.xls'
+    '*.xlsx'
+    '*.ppt'
+    '*.pptx'
+    '*.odt'
+    '*.ods'
+    '*.jpg'
+    '*.jpeg'
+    '*.png'
+    '*.gif'
+    '*.ico'
+    '*.webp'
+    '*.svg'
+    '*.mp3'
+    '*.mp4'
 )
 
 GPG_CIPHER_ALGO="AES256"
@@ -26,14 +57,6 @@ GPG_S2K_DIGEST_ALGO="SHA512"
 GPG_S2K_COUNT="65011712"
 
 echo "Starting file encryption check..."
-
-# Load configuration if exists.
-if [ -f "$CONFIG_FILE" ]; then
-    source "$CONFIG_FILE"
-    ENCRYPT_PATTERNS=("${CUSTOM_ENCRYPT_PATTERNS[@]}")
-else
-    ENCRYPT_PATTERNS=("${DEFAULT_ENCRYPT_PATTERNS[@]}")
-fi
 
 # Check if GPG is installed.
 if ! command -v gpg &> /dev/null; then
@@ -49,10 +72,10 @@ if [ ! -f "$ENCRYPTION_KEY_FILE" ]; then
     echo "[WARNING] No encryption key file found at $ENCRYPTION_KEY_FILE"
     echo "Creating a new encryption key file..."
     echo "Please enter a strong passphrase for encryption:"
-    read -s PASSPHRASE
+    read -s PASSPHRASE < /dev/tty
     echo ""
     echo "Confirm passphrase:"
-    read -s PASSPHRASE_CONFIRM
+    read -s PASSPHRASE_CONFIRM < /dev/tty
     echo ""
 
     if [ "$PASSPHRASE" != "$PASSPHRASE_CONFIRM" ]; then
@@ -86,19 +109,23 @@ SKIPPED_COUNT=0
 # Function to check if a file matches any pattern.
 matches_pattern() {
     local file="$1"
-    for pattern in "${ENCRYPT_PATTERNS[@]}"; do
+    for pattern in "${ENCRYPT_FILENAME_PATTERNS[@]}"; do
+
         # Convert glob pattern to regex.
         if [[ "$file" == $pattern ]]; then
             return 0
         fi
+
     done
+
     return 1
+
 }
 
 # Function to encrypt a file.
 encrypt_file() {
     local file="$1"
-    local encrypted_file="${file}.gpg"
+    local encrypted_file="${file}.encrypted"
 
     echo "[ENCRYPTING] $file"
 
@@ -144,7 +171,7 @@ for FILE in $STAGED_FILES; do
     fi
 
     # Skip if already encrypted.
-    if [[ "$FILE" == *.gpg ]]; then
+    if [[ "$FILE" == *.encrypted ]]; then
         continue
     fi
 
