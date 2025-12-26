@@ -1,0 +1,26 @@
+#!/bin/bash
+# Pre-push hook to block pushes for branches containing "local/"
+# This hook runs after git push operations.
+
+set -e
+
+# Run all scripts in pre-push.d directory if it exists.
+HOOK_DIR="hooks/pre-push.d"  # body of repo for testing.
+
+if [ -d "$HOOK_DIR" ]; then
+    for hook in "$HOOK_DIR"/*; do
+        if [ -x "$hook" ]; then
+            echo "Running hook: $(basename "$hook")"
+            "$hook"
+            # Check exit status
+            if [ $? -ne 0 ]; then
+                echo "Hook $(basename "$hook") failed!"
+                exit 1
+            fi
+        fi
+    done
+fi
+
+exit 0
+
+
