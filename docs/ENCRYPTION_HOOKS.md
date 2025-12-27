@@ -1,5 +1,11 @@
 # Git Encryption Hooks Documentation
 
+These hooks for encrypt and decrypt files using GPG may be non-intuitive. When
+you commit a file, the original file is kept in your working directory, but the
+encrypted version is committed to the repository. When you pull, merge, clone,
+or checkout, the encrypted files are decrypted and the original files are kept
+in your working directory.
+
 ## Summary
 
 This repository includes secure Git hooks for automatically encrypting sensitive
