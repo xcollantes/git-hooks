@@ -1,0 +1,36 @@
+#!/bin/bash
+# Post-checkout hook to automatically decrypt encrypted files after checkout/clone.
+# This hook runs after git checkout or git clone operations.
+
+set -e
+
+# The hook receives three parameters:
+# $1 - ref of the previous HEAD
+# $2 - ref of the new HEAD
+# $3 - flag indicating whether it was a branch checkout (1) or file checkout (0)
+
+# Only run on branch checkouts (includes clone).
+if [ "$3" = "0" ]; then
+    exit 0
+fi
+
+# Run all scripts in post-checkout.d directory if it exists.
+HOOK_DIR="$(git rev-parse --show-toplevel)/.git/hooks/post-checkout.d"
+
+if [ -d "$HOOK_DIR" ]; then
+    for hook in "$HOOK_DIR"/*; do
+        if [ -x "$hook" ]; then
+            echo "========================================"
+            echo "POST-CHECKOUT: Running hook: $(basename "$hook")"
+            echo "========================================"
+            "$hook"
+            # Check exit status.
+            if [ $? -ne 0 ]; then
+                echo "POST-CHECKOUT: Hook $(basename "$hook") failed!"
+                exit 1
+            fi
+        fi
+    done
+fi
+
+exit 0

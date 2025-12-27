@@ -149,13 +149,18 @@ encrypt_file() {
         "$file" 2>/dev/null
 
     if [ $? -eq 0 ]; then
-        # Add encrypted file to staging.
-        git add "$encrypted_file"
+        # Add encrypted file content to git's object database and index.
+        # This allows us to commit the file without keeping it in the working directory.
+        FILE_HASH=$(git hash-object -w "$encrypted_file")
+        git update-index --add --cacheinfo 100644 "$FILE_HASH" "$encrypted_file"
 
         # Remove original file from staging (but keep in working directory).
         git reset -- "$file" >/dev/null 2>&1 || true
 
-        # Remove encrypted file from working directory (it's already staged).
+        # Tell git to assume the encrypted file is unchanged after commit.
+        git update-index --assume-unchanged "$encrypted_file" 2>/dev/null || true
+
+        # Remove encrypted file from working directory.
         rm -f "$encrypted_file"
 
         echo "[SUCCESS] Encrypted: $file -> $encrypted_file (encrypted version will be committed, not kept locally)"

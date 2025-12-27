@@ -1,5 +1,5 @@
 #!/bin/bash
-# Post-merge hook to decrypt files after pull/merge operations.
+# Post-checkout hook to decrypt files after checkout/clone operations.
 # Uses GPG to decrypt files that were encrypted during pre-commit.
 
 set -e
@@ -105,4 +105,3 @@ fi
 echo "========================================"
 
 exit 0
-
